@@ -12,20 +12,20 @@ import (
 var b = &binder{}
 
 type FooStruct struct {
-	Foo string `json:"foo" form:"foo" xml:"foo"`
+	Foo string `json:"foo" form:"foo" xml:"foo" query:"foo"`
 }
 
 type FooBarStruct struct {
 	FooStruct
-	Bar string `json:"bar" form:"bar" xml:"bar"`
+	Bar string `json:"bar" form:"bar" xml:"bar" query:"bar"`
 }
 
 type FooStructForMapType struct {
-	MapFoo map[string]any `form:"map_foo"`
+	MapFoo map[string]any `form:"map_foo" query:"map_foo"`
 }
 
 type FooStructForBoolType struct {
-	BoolFoo bool `form:"bool_foo"`
+	BoolFoo bool `form:"bool_foo" query:"bool_foo"`
 }
 
 func TestBindingJSONNilBody(t *testing.T) {
