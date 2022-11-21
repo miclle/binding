@@ -39,6 +39,7 @@ var (
 	Form          Binder = formBinder{}
 	FormMultipart Binder = formMultipartBinder{}
 	Query         Binder = queryBinding{}
+	URI                  = uriBinding{}
 )
 
 type binder struct{}
