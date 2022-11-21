@@ -15,6 +15,19 @@ type FooStruct struct {
 	Foo string `json:"foo" form:"foo" xml:"foo"`
 }
 
+type FooBarStruct struct {
+	FooStruct
+	Bar string `json:"bar" form:"bar" xml:"bar"`
+}
+
+type FooStructForMapType struct {
+	MapFoo map[string]any `form:"map_foo"`
+}
+
+type FooStructForBoolType struct {
+	BoolFoo bool `form:"bool_foo"`
+}
+
 func TestBindingJSONNilBody(t *testing.T) {
 	var obj FooStruct
 	req, _ := http.NewRequest(http.MethodPost, "/", nil)
@@ -81,11 +94,6 @@ func TestBindingJSONUseNumber(t *testing.T) {
 
 func TestBindingForm(t *testing.T) {
 
-	type FooBarStruct struct {
-		Foo string `json:"foo" form:"foo" xml:"foo"`
-		Bar string `json:"bar" form:"bar" xml:"bar"`
-	}
-
 	obj := FooBarStruct{}
 	req := requestWithBody("POST", "/", "foo=bar&bar=foo")
 	req.Header.Add("Content-Type", MIMEPOSTForm)
@@ -117,6 +125,86 @@ func TestBindingForm(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "", obj.Foo)
 	assert.Equal(t, "", obj.Bar)
+}
+
+func TestBindingQuery(t *testing.T) {
+	testQueryBinding(t, "POST", "/?foo=bar&bar=foo", "/", "foo=unused", "bar2=foo")
+}
+
+func TestBindingQuery2(t *testing.T) {
+	testQueryBinding(t, "GET", "/?foo=bar&bar=foo", "/?bar2=foo", "foo=unused", "")
+}
+
+func TestBindingQueryFail(t *testing.T) {
+	testQueryBindingFail(t, "POST", "/?map_foo=", "/", "map_foo=unused", "bar2=foo")
+}
+
+func TestBindingQueryFail2(t *testing.T) {
+	testQueryBindingFail(t, "GET", "/?map_foo=", "/?bar2=foo", "map_foo=unused", "")
+}
+
+func TestBindingQueryBoolFail(t *testing.T) {
+	testQueryBindingBoolFail(t, "GET", "/?bool_foo=fasl", "/?bar2=foo", "bool_foo=unused", "")
+}
+
+func TestBindingQueryStringMap(t *testing.T) {
+	b := Query
+
+	obj := make(map[string]string)
+	req := requestWithBody("GET", "/?foo=bar&hello=world", "")
+	err := b.Bind(req, &obj)
+	assert.NoError(t, err)
+	assert.NotNil(t, obj)
+	assert.Len(t, obj, 2)
+	assert.Equal(t, "bar", obj["foo"])
+	assert.Equal(t, "world", obj["hello"])
+
+	obj = make(map[string]string)
+	req = requestWithBody("GET", "/?foo=bar&foo=2&hello=world", "") // should pick last
+	err = b.Bind(req, &obj)
+	assert.NoError(t, err)
+	assert.NotNil(t, obj)
+	assert.Len(t, obj, 2)
+	assert.Equal(t, "2", obj["foo"])
+	assert.Equal(t, "world", obj["hello"])
+}
+
+func testQueryBinding(t *testing.T, method, path, badPath, body, badBody string) {
+	b := Query
+
+	obj := FooBarStruct{}
+	req := requestWithBody(method, path, body)
+	if method == "POST" {
+		req.Header.Add("Content-Type", MIMEPOSTForm)
+	}
+	err := b.Bind(req, &obj)
+	assert.NoError(t, err)
+	assert.Equal(t, "bar", obj.Foo)
+	assert.Equal(t, "foo", obj.Bar)
+}
+
+func testQueryBindingFail(t *testing.T, method, path, badPath, body, badBody string) {
+	b := Query
+
+	obj := FooStructForMapType{}
+	req := requestWithBody(method, path, body)
+	if method == "POST" {
+		req.Header.Add("Content-Type", MIMEPOSTForm)
+	}
+	err := b.Bind(req, &obj)
+	assert.Error(t, err)
+}
+
+func testQueryBindingBoolFail(t *testing.T, method, path, badPath, body, badBody string) {
+	b := Query
+
+	obj := FooStructForBoolType{}
+	req := requestWithBody(method, path, body)
+	if method == "POST" {
+		req.Header.Add("Content-Type", MIMEPOSTForm)
+	}
+	err := b.Bind(req, &obj)
+	assert.Error(t, err)
 }
 
 func requestWithBody(method, path, body string) (req *http.Request) {

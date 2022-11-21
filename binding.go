@@ -38,6 +38,7 @@ var (
 	JSON          Binder = jsonBinder{}
 	Form          Binder = formBinder{}
 	FormMultipart Binder = formMultipartBinder{}
+	Query         Binder = queryBinding{}
 )
 
 type binder struct{}
