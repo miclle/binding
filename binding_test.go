@@ -104,6 +104,7 @@ func TestBindingForm(t *testing.T) {
 
 	obj = FooBarStruct{}
 	req = requestWithBody("GET", "/?foo=bar&bar=foo", "")
+	req.Header.Add("Content-Type", MIMEPOSTForm)
 	err = b.Bind(req, &obj)
 	assert.NoError(t, err)
 	assert.Equal(t, "bar", obj.Foo)
@@ -111,6 +112,7 @@ func TestBindingForm(t *testing.T) {
 
 	obj = FooBarStruct{}
 	req = requestWithBody("GET", "/?bar2=foo", "")
+	req.Header.Add("Content-Type", MIMEPOSTForm)
 	err = b.Bind(req, &obj)
 	assert.NoError(t, err)
 	assert.Equal(t, "", obj.Foo)
