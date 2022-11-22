@@ -36,6 +36,8 @@ type Binder interface {
 // present in the request to struct instances.
 var (
 	JSON          Binder = jsonBinder{}
+	XML           Binder = xmlBinding{}
+	YAML          Binder = yamlBinding{}
 	Form          Binder = formBinder{}
 	FormMultipart Binder = formMultipartBinder{}
 	Query         Binder = queryBinding{}
@@ -54,6 +56,10 @@ func (binder *binder) Bind(req *http.Request, obj any) error {
 	switch contentType {
 	case MIMEJSON:
 		err = JSON.Bind(req, obj)
+	case MIMEXML, MIMEXML2:
+		err = XML.Bind(req, obj)
+	case MIMEYAML:
+		err = YAML.Bind(req, obj)
 	case MIMEMultipartPOSTForm:
 		err = FormMultipart.Bind(req, obj)
 	default: // case MIMEPOSTForm:
