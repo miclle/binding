@@ -38,26 +38,10 @@ func TestBindingJSONNilBody(t *testing.T) {
 }
 
 func TestBindingJSON(t *testing.T) {
-	var obj = FooStruct{}
-	req := requestWithBody("POST", "/", `{"foo": "bar"}`)
-	req.Header.Set("Content-Type", "application/json")
-
-	err := b.Bind(req, &obj)
-	assert.NoError(t, err)
-	assert.Equal(t, "bar", obj.Foo)
-
-	obj = FooStruct{}
-	req = requestWithBody("POST", "/", `{"bar": "foo"}`)
-	req.Header.Set("Content-Type", "application/json")
-
-	err = b.Bind(req, &obj)
-	assert.NoError(t, err)
-	assert.NotEqual(t, "bar", obj.Foo)
-	assert.Equal(t, "", obj.Foo)
+	testBodyBinding(t, b, "application/json", "/", "/", `{"foo": "bar"}`, `{"bar": "foo"}`)
 }
 
 func TestBindingJSONUseNumber(t *testing.T) {
-
 	type FooStructUseNumber struct {
 		Foo any `json:"foo"`
 	}
@@ -90,6 +74,58 @@ func TestBindingJSONUseNumber(t *testing.T) {
 	err = b.Bind(req, &obj)
 	assert.NoError(t, err)
 	assert.Nil(t, obj.Foo)
+}
+
+func TestBindingJSONStringMap(t *testing.T) {
+	testBodyBindingStringMap(t, b, "application/json", "/", "/", `{"foo": "bar", "hello": "world"}`, `{"num": 2}`)
+}
+
+func TestBindingJSONDisallowUnknownFields(t *testing.T) {
+	type FooStructDisallowUnknownFields struct {
+		Foo any `json:"foo"`
+	}
+
+	EnableDecoderDisallowUnknownFields = true
+	defer func() {
+		EnableDecoderDisallowUnknownFields = false
+	}()
+
+	obj := FooStructDisallowUnknownFields{}
+	req := requestWithBody("POST", "/", `{"foo": "bar"}`)
+	req.Header.Set("Content-Type", "application/json")
+	err := b.Bind(req, &obj)
+	assert.NoError(t, err)
+	assert.Equal(t, "bar", obj.Foo)
+
+	obj = FooStructDisallowUnknownFields{}
+	req = requestWithBody("POST", "/", `{"foo": "bar", "what": "this"}`)
+	req.Header.Set("Content-Type", "application/json")
+	err = b.Bind(req, &obj)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "what")
+}
+
+func TestBindingXML(t *testing.T) {
+	testBodyBinding(t, b, "application/xml", "/", "/", "<map><foo>bar</foo></map>", "<map><bar>foo</bar></map>")
+	testBodyBinding(t, b, "text/xml", "/", "/", "<map><foo>bar</foo></map>", "<map><bar>foo</bar></map>")
+}
+
+func TestBindingXMLFail(t *testing.T) {
+	testBodyBindingFail(t, b, "application/xml", "/", "/", "<map><foo>bar<foo></map>", "<map><bar>foo</bar></map>")
+	testBodyBindingFail(t, b, "text/xml", "/", "/", "<map><foo>bar<foo></map>", "<map><bar>foo</bar></map>")
+}
+
+func TestBindingYAML(t *testing.T) {
+	testBodyBinding(t, b, "application/x-yaml", "/", "/", `foo: bar`, `bar: foo`)
+}
+
+func TestBindingYAMLStringMap(t *testing.T) {
+	// YAML is a superset of JSON, so the test below is JSON (to avoid newlines)
+	testBodyBindingStringMap(t, b, "application/x-yaml", "/", "/", `{"foo": "bar", "hello": "world"}`, `{"nested": {"foo": "bar"}}`)
+}
+
+func TestBindingYAMLFail(t *testing.T) {
+	testBodyBindingFail(t, b, "application/x-yaml", "/", "/", `foo:\nbar`, `bar: foo`)
 }
 
 func TestBindingForm(t *testing.T) {
@@ -129,17 +165,11 @@ func TestBindingForm(t *testing.T) {
 
 func TestBindingQuery(t *testing.T) {
 	testQueryBinding(t, "POST", "/?foo=bar&bar=foo", "/", "foo=unused", "bar2=foo")
-}
-
-func TestBindingQuery2(t *testing.T) {
 	testQueryBinding(t, "GET", "/?foo=bar&bar=foo", "/?bar2=foo", "foo=unused", "")
 }
 
 func TestBindingQueryFail(t *testing.T) {
 	testQueryBindingFail(t, "POST", "/?map_foo=", "/", "map_foo=unused", "bar2=foo")
-}
-
-func TestBindingQueryFail2(t *testing.T) {
 	testQueryBindingFail(t, "GET", "/?map_foo=", "/?bar2=foo", "map_foo=unused", "")
 }
 
@@ -204,6 +234,64 @@ func testQueryBindingBoolFail(t *testing.T, method, path, badPath, body, badBody
 		req.Header.Add("Content-Type", MIMEPOSTForm)
 	}
 	err := b.Bind(req, &obj)
+	assert.Error(t, err)
+}
+
+func testBodyBinding(t *testing.T, b Binder, contentType, path, badPath, body, badBody string) {
+	obj := FooStruct{}
+	req := requestWithBody("POST", path, body)
+	req.Header.Set("Content-Type", contentType)
+	err := b.Bind(req, &obj)
+	assert.NoError(t, err)
+	assert.Equal(t, "bar", obj.Foo)
+
+	obj = FooStruct{}
+	req = requestWithBody("POST", badPath, badBody)
+	req.Header.Set("Content-Type", contentType)
+	err = b.Bind(req, &obj)
+	assert.NoError(t, err)
+	assert.Equal(t, "", obj.Foo)
+}
+
+func testBodyBindingFail(t *testing.T, b Binder, contentType, path, badPath, body, badBody string) {
+	obj := FooStruct{}
+	req := requestWithBody("POST", path, body)
+	req.Header.Set("Content-Type", contentType)
+	err := b.Bind(req, &obj)
+	assert.Error(t, err)
+	assert.Equal(t, "", obj.Foo)
+
+	obj = FooStruct{}
+	req = requestWithBody("POST", badPath, badBody)
+	req.Header.Set("Content-Type", contentType)
+	err = b.Bind(req, &obj)
+	assert.NoError(t, err)
+	assert.Equal(t, "", obj.Foo)
+}
+
+func testBodyBindingStringMap(t *testing.T, b Binder, contentType, path, badPath, body, badBody string) {
+	obj := make(map[string]string)
+	req := requestWithBody("POST", path, body)
+	req.Header.Set("Content-Type", contentType)
+	err := b.Bind(req, &obj)
+	assert.NoError(t, err)
+	assert.NotNil(t, obj)
+	assert.Len(t, obj, 2)
+	assert.Equal(t, "bar", obj["foo"])
+	assert.Equal(t, "world", obj["hello"])
+
+	if badPath != "" && badBody != "" {
+		obj = make(map[string]string)
+		req = requestWithBody("POST", badPath, badBody)
+		req.Header.Set("Content-Type", contentType)
+		err = b.Bind(req, &obj)
+		assert.Error(t, err)
+	}
+
+	objInt := make(map[string]int)
+	req = requestWithBody("POST", path, body)
+	req.Header.Set("Content-Type", contentType)
+	err = b.Bind(req, &objInt)
 	assert.Error(t, err)
 }
 
