@@ -44,17 +44,23 @@ type Binder interface {
 	Bind(*http.Request, any) error
 }
 
+// URIBinder adds BindURI method to Binding. BindUri is similar with Bind,
+// but it reads the Params.
+type URIBinder interface {
+	BindURI(map[string][]string, any) error
+}
+
 // These implement the Binding interface and can be used to bind the data
 // present in the request to struct instances.
 var (
-	JSON          Binder = jsonBinder{}
-	XML           Binder = xmlBinding{}
-	YAML          Binder = yamlBinding{}
-	Form          Binder = formBinder{}
-	FormMultipart Binder = formMultipartBinder{}
-	Query         Binder = queryBinding{}
-	Header        Binder = headerBinding{}
-	URI                  = uriBinding{}
+	JSON          Binder    = jsonBinder{}
+	XML           Binder    = xmlBinding{}
+	YAML          Binder    = yamlBinding{}
+	Form          Binder    = formBinder{}
+	FormMultipart Binder    = formMultipartBinder{}
+	Query         Binder    = queryBinding{}
+	Header        Binder    = headerBinding{}
+	URI           URIBinder = uriBinding{}
 )
 
 type binder struct{}
