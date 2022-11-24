@@ -53,6 +53,7 @@ var (
 	Form          Binder = formBinder{}
 	FormMultipart Binder = formMultipartBinder{}
 	Query         Binder = queryBinding{}
+	Header        Binder = headerBinding{}
 	URI                  = uriBinding{}
 )
 
@@ -77,7 +78,7 @@ func (binder *binder) Bind(req *http.Request, obj any) (err error) {
 		}
 	}
 
-	// bind request query and uri
+	// bind request query, header and uri
 	// --------------------------------------------------------------------------
 	vPtr = vPtr.Elem()
 
@@ -89,13 +90,11 @@ func (binder *binder) Bind(req *http.Request, obj any) (err error) {
 	}
 
 	if vPtr.Kind() != reflect.Struct {
-		return nil
+		return
 	}
 
-	var (
-		vType                      = vPtr.Type()
-		hasQueryField, hasURIField bool
-	)
+	var vType = vPtr.Type()
+	var hasQueryField, hasURIField, hasHeaderField bool
 
 	for i := 0; i < vPtr.NumField(); i++ {
 		field := vType.Field(i)
@@ -104,6 +103,9 @@ func (binder *binder) Bind(req *http.Request, obj any) (err error) {
 		}
 		if tag := field.Tag.Get("url"); tag != "" && tag != "-" {
 			hasURIField = true
+		}
+		if tag := field.Tag.Get("header"); tag != "" && tag != "-" {
+			hasHeaderField = true
 		}
 	}
 
@@ -116,6 +118,13 @@ func (binder *binder) Bind(req *http.Request, obj any) (err error) {
 
 	if hasURIField {
 		// TODO(m)
+	}
+
+	if hasHeaderField {
+		err = Header.Bind(req, obj)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

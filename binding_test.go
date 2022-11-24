@@ -199,6 +199,31 @@ func TestBindingQueryStringMap(t *testing.T) {
 	assert.Equal(t, "world", obj["hello"])
 }
 
+func TestHeaderBinding(t *testing.T) {
+
+	type tHeader struct {
+		Limit int `header:"limit"`
+	}
+
+	var theader tHeader
+
+	req := requestWithBody("GET", "/", "")
+	req.Header.Add("limit", "1000")
+
+	assert.NoError(t, b.Bind(req, &theader))
+	assert.Equal(t, 1000, theader.Limit)
+
+	req = requestWithBody("GET", "/", "")
+	req.Header.Add("fail", `{fail:fail}`)
+
+	type failStruct struct {
+		Fail map[string]any `header:"fail"`
+	}
+
+	err := b.Bind(req, &failStruct{})
+	assert.Error(t, err)
+}
+
 func testQueryBinding(t *testing.T, method, path, badPath, body, badBody string) {
 	obj := FooBarStruct{}
 	req := requestWithBody(method, path, body)
