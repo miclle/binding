@@ -200,8 +200,6 @@ func TestBindingQueryStringMap(t *testing.T) {
 }
 
 func testQueryBinding(t *testing.T, method, path, badPath, body, badBody string) {
-	b := Query
-
 	obj := FooBarStruct{}
 	req := requestWithBody(method, path, body)
 	if method == "POST" {
@@ -214,8 +212,6 @@ func testQueryBinding(t *testing.T, method, path, badPath, body, badBody string)
 }
 
 func testQueryBindingFail(t *testing.T, method, path, badPath, body, badBody string) {
-	b := Query
-
 	obj := FooStructForMapType{}
 	req := requestWithBody(method, path, body)
 	if method == "POST" {
@@ -226,8 +222,6 @@ func testQueryBindingFail(t *testing.T, method, path, badPath, body, badBody str
 }
 
 func testQueryBindingBoolFail(t *testing.T, method, path, badPath, body, badBody string) {
-	b := Query
-
 	obj := FooStructForBoolType{}
 	req := requestWithBody(method, path, body)
 	if method == "POST" {

@@ -3,27 +3,39 @@ package binding
 import (
 	"errors"
 	"net/http"
+	"reflect"
 )
 
 // Content-Type MIME of the most common data formats.
 const (
-	MIMEJSON              = "application/json"
-	MIMEHTML              = "text/html"
-	MIMEXML               = "application/xml"
-	MIMEXML2              = "text/xml"
-	MIMEPlain             = "text/plain"
-	MIMEPOSTForm          = "application/x-www-form-urlencoded"
-	MIMEMultipartPOSTForm = "multipart/form-data"
+	MIMEJSON              = "application/json"                  // json
+	MIMEYAML              = "application/x-yaml"                // yaml
+	MIMEXML               = "application/xml"                   // xml
+	MIMEXML2              = "text/xml"                          // xml
+	MIMEPOSTForm          = "application/x-www-form-urlencoded" // form
+	MIMEMultipartPOSTForm = "multipart/form-data"               // form
 	MIMEPROTOBUF          = "application/x-protobuf"
 	MIMEMSGPACK           = "application/x-msgpack"
 	MIMEMSGPACK2          = "application/msgpack"
-	MIMEYAML              = "application/x-yaml"
 	MIMETOML              = "application/toml"
+
+	MIMEHTML  = "text/html"
+	MIMEPlain = "text/plain"
 )
 
 var (
-	errInvalidRequest = errors.New("invalid request")
+	errCantOnlyBindPointer = errors.New("can only bind pointer")
+	errInvalidRequest      = errors.New("invalid request")
 )
+
+var binders = map[string]Binder{
+	MIMEJSON:              JSON,          // json
+	MIMEYAML:              YAML,          // yaml
+	MIMEXML:               XML,           // xml
+	MIMEXML2:              XML,           // xml
+	MIMEMultipartPOSTForm: FormMultipart, // form
+	MIMEPOSTForm:          Form,          // form
+}
 
 // Binder describes the interface which needs to be implemented for binding the
 // data present in the request such as JSON request body, query parameters or
@@ -46,25 +58,65 @@ var (
 
 type binder struct{}
 
-func (binder *binder) Bind(req *http.Request, obj any) error {
+func (binder *binder) Bind(req *http.Request, obj any) (err error) {
 
-	var (
-		contentType = filterFlags(req.Header.Get("Content-Type"))
-		err         error
-	)
+	vPtr := reflect.ValueOf(obj)
 
-	switch contentType {
-	case MIMEJSON:
-		err = JSON.Bind(req, obj)
-	case MIMEXML, MIMEXML2:
-		err = XML.Bind(req, obj)
-	case MIMEYAML:
-		err = YAML.Bind(req, obj)
-	case MIMEMultipartPOSTForm:
-		err = FormMultipart.Bind(req, obj)
-	default: // case MIMEPOSTForm:
-		err = Form.Bind(req, obj)
+	if vPtr.Kind() != reflect.Ptr {
+		return errCantOnlyBindPointer
 	}
 
-	return err
+	// bind request body
+	// --------------------------------------------------------------------------
+	var contentType = filterFlags(req.Header.Get("Content-Type"))
+
+	if binder, exists := binders[contentType]; exists {
+		err = binder.Bind(req, obj)
+		if err != nil {
+			return err
+		}
+	}
+
+	// bind request query and uri
+	// --------------------------------------------------------------------------
+	vPtr = vPtr.Elem()
+
+	for vPtr.Kind() == reflect.Ptr {
+		if vPtr.IsNil() {
+			vPtr.Set(reflect.New(vPtr.Type().Elem()))
+		}
+		vPtr = vPtr.Elem()
+	}
+
+	if vPtr.Kind() != reflect.Struct {
+		return nil
+	}
+
+	var (
+		vType                      = vPtr.Type()
+		hasQueryField, hasURIField bool
+	)
+
+	for i := 0; i < vPtr.NumField(); i++ {
+		field := vType.Field(i)
+		if tag := field.Tag.Get("query"); tag != "" && tag != "-" {
+			hasQueryField = true
+		}
+		if tag := field.Tag.Get("url"); tag != "" && tag != "-" {
+			hasURIField = true
+		}
+	}
+
+	if hasQueryField {
+		err = Query.Bind(req, obj)
+		if err != nil {
+			return err
+		}
+	}
+
+	if hasURIField {
+		// TODO(m)
+	}
+
+	return nil
 }
