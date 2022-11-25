@@ -28,15 +28,6 @@ var (
 	errInvalidRequest      = errors.New("invalid request")
 )
 
-var binders = map[string]Binder{
-	MIMEJSON:              JSON,          // json
-	MIMEYAML:              YAML,          // yaml
-	MIMEXML:               XML,           // xml
-	MIMEXML2:              XML,           // xml
-	MIMEMultipartPOSTForm: FormMultipart, // form
-	MIMEPOSTForm:          Form,          // form
-}
-
 // Binder describes the interface which needs to be implemented for binding the
 // data present in the request such as JSON request body, query parameters or
 // the form POST.
@@ -63,6 +54,17 @@ var (
 	URI           URIBinder = uriBinding{}
 )
 
+var defaultBinder Binder
+
+var binders = map[string]Binder{
+	MIMEJSON:              JSON,          // json
+	MIMEYAML:              YAML,          // yaml
+	MIMEXML:               XML,           // xml
+	MIMEXML2:              XML,           // xml
+	MIMEMultipartPOSTForm: FormMultipart, // form
+	MIMEPOSTForm:          Form,          // form
+}
+
 type binder struct{}
 
 func (binder *binder) Bind(req *http.Request, obj any) (err error) {
@@ -79,9 +81,13 @@ func (binder *binder) Bind(req *http.Request, obj any) (err error) {
 
 	if binder, exists := binders[contentType]; exists {
 		err = binder.Bind(req, obj)
-		if err != nil {
-			return err
+	} else {
+		if defaultBinder != nil {
+			err = defaultBinder.Bind(req, obj)
 		}
+	}
+	if err != nil {
+		return err
 	}
 
 	// bind request query, header and uri
