@@ -256,7 +256,7 @@ func testQueryBindingBoolFail(t *testing.T, method, path, badPath, body, badBody
 	assert.Error(t, err)
 }
 
-func testBodyBinding(t *testing.T, b Binder, contentType, path, badPath, body, badBody string) {
+func testBodyBinding(t *testing.T, b *binder, contentType, path, badPath, body, badBody string) {
 	obj := FooStruct{}
 	req := requestWithBody("POST", path, body)
 	req.Header.Set("Content-Type", contentType)
@@ -272,7 +272,7 @@ func testBodyBinding(t *testing.T, b Binder, contentType, path, badPath, body, b
 	assert.Equal(t, "", obj.Foo)
 }
 
-func testBodyBindingFail(t *testing.T, b Binder, contentType, path, badPath, body, badBody string) {
+func testBodyBindingFail(t *testing.T, b *binder, contentType, path, badPath, body, badBody string) {
 	obj := FooStruct{}
 	req := requestWithBody("POST", path, body)
 	req.Header.Set("Content-Type", contentType)
@@ -288,7 +288,7 @@ func testBodyBindingFail(t *testing.T, b Binder, contentType, path, badPath, bod
 	assert.Equal(t, "", obj.Foo)
 }
 
-func testBodyBindingStringMap(t *testing.T, b Binder, contentType, path, badPath, body, badBody string) {
+func testBodyBindingStringMap(t *testing.T, b *binder, contentType, path, badPath, body, badBody string) {
 	obj := make(map[string]string)
 	req := requestWithBody("POST", path, body)
 	req.Header.Set("Content-Type", contentType)
