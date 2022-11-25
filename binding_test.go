@@ -3,7 +3,9 @@ package binding
 import (
 	"bytes"
 	stdJson "encoding/json"
+	"fmt"
 	"net/http"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -222,6 +224,50 @@ func TestHeaderBinding(t *testing.T) {
 
 	err := b.Bind(req, &failStruct{})
 	assert.Error(t, err)
+}
+
+func TestURIBinding(t *testing.T) {
+
+	type Tag struct {
+		Name string `uri:"name"`
+	}
+	var tag Tag
+	m := make(map[string][]string)
+	m["name"] = []string{"thinkerou"}
+	assert.NoError(t, URI.BindURI(m, &tag))
+	assert.Equal(t, "thinkerou", tag.Name)
+
+	type NotSupportStruct struct {
+		Name map[string]any `uri:"name"`
+	}
+	var not NotSupportStruct
+
+	fmt.Printf("not: %+v\n", not)
+
+	assert.Error(t, URI.BindURI(m, &not))
+	assert.Equal(t, map[string]any{}, not.Name)
+}
+
+func TestURIInnerBinding(t *testing.T) {
+	type Tag struct {
+		Name string `uri:"name"`
+		S    struct {
+			Age int `uri:"age"`
+		}
+	}
+
+	expectedName := "mike"
+	expectedAge := 25
+
+	m := map[string][]string{
+		"name": {expectedName},
+		"age":  {strconv.Itoa(expectedAge)},
+	}
+
+	var tag Tag
+	assert.NoError(t, URI.BindURI(m, &tag))
+	assert.Equal(t, tag.Name, expectedName)
+	assert.Equal(t, tag.S.Age, expectedAge)
 }
 
 func testQueryBinding(t *testing.T, method, path, badPath, body, badBody string) {
