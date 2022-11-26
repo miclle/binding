@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/json-iterator/go v1.1.12
+	github.com/pelletier/go-toml/v2 v2.0.6
 	github.com/stretchr/testify v1.8.1
 	gopkg.in/yaml.v3 v3.0.1
 )

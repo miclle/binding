@@ -3,7 +3,6 @@ package binding
 import (
 	"bytes"
 	stdJson "encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 	"testing"
@@ -165,6 +164,14 @@ func TestBindingForm(t *testing.T) {
 	assert.Equal(t, "", obj.Bar)
 }
 
+func TestBindingTOML(t *testing.T) {
+	testBodyBinding(t, b, "application/toml", "/", "/", `foo="bar"`, `bar="foo"`)
+}
+
+func TestBindingTOMLFail(t *testing.T) {
+	testBodyBindingFail(t, b, "application/toml", "/", "/", `foo=\n"bar"`, `bar="foo"`)
+}
+
 func TestBindingQuery(t *testing.T) {
 	testQueryBinding(t, "POST", "/?foo=bar&bar=foo", "/", "foo=unused", "bar2=foo")
 	testQueryBinding(t, "GET", "/?foo=bar&bar=foo", "/?bar2=foo", "foo=unused", "")
@@ -241,9 +248,6 @@ func TestURIBinding(t *testing.T) {
 		Name map[string]any `uri:"name"`
 	}
 	var not NotSupportStruct
-
-	fmt.Printf("not: %+v\n", not)
-
 	assert.Error(t, URI.BindURI(m, &not))
 	assert.Equal(t, map[string]any{}, not.Name)
 }

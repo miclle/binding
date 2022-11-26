@@ -17,7 +17,7 @@ const (
 	MIMEPROTOBUF          = "application/x-protobuf"
 	MIMEMSGPACK           = "application/x-msgpack"
 	MIMEMSGPACK2          = "application/msgpack"
-	MIMETOML              = "application/toml"
+	MIMETOML              = "application/toml" // toml
 
 	MIMEHTML  = "text/html"
 	MIMEPlain = "text/plain"
@@ -49,6 +49,7 @@ var (
 	YAML          Binder    = yamlBinding{}
 	Form          Binder    = formBinder{}
 	FormMultipart Binder    = formMultipartBinder{}
+	TOML          Binder    = tomlBinding{}
 	Query         Binder    = queryBinding{}
 	Header        Binder    = headerBinding{}
 	URI           URIBinder = uriBinding{}
@@ -63,6 +64,7 @@ var binders = map[string]Binder{
 	MIMEXML2:              XML,           // xml
 	MIMEMultipartPOSTForm: FormMultipart, // form
 	MIMEPOSTForm:          Form,          // form
+	MIMETOML:              TOML,          // toml
 }
 
 type binder struct{}
