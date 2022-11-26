@@ -13,12 +13,12 @@ import (
 var b = &binder{}
 
 type FooStruct struct {
-	Foo string `json:"foo" form:"foo" xml:"foo" query:"foo"`
+	Foo string `json:"foo" yaml:"foo" form:"foo" xml:"foo" toml:"foo" query:"foo"`
 }
 
 type FooBarStruct struct {
 	FooStruct
-	Bar string `json:"bar" form:"bar" xml:"bar" query:"bar"`
+	Bar string `json:"bar" yaml:"bar" form:"bar" xml:"bar" toml:"bar" query:"bar"`
 }
 
 type FooStructForMapType struct {
