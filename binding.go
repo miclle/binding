@@ -15,8 +15,6 @@ const (
 	MIMEPOSTForm          = "application/x-www-form-urlencoded" // form
 	MIMEMultipartPOSTForm = "multipart/form-data"               // form
 	MIMEPROTOBUF          = "application/x-protobuf"
-	MIMEMSGPACK           = "application/x-msgpack"
-	MIMEMSGPACK2          = "application/msgpack"
 	MIMETOML              = "application/toml" // toml
 
 	MIMEHTML  = "text/html"
