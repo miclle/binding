@@ -23,10 +23,6 @@ var (
 	ErrConvertToMapString = errors.New("can not convert to map of strings")
 )
 
-func mapURI(ptr any, m map[string][]string) error {
-	return mapFormByTag(ptr, m, "uri")
-}
-
 func mapForm(ptr any, form map[string][]string) error {
 	return mapFormByTag(ptr, form, "form")
 }

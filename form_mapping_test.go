@@ -131,7 +131,7 @@ func TestMappingURI(t *testing.T) {
 	var s struct {
 		F int `uri:"field"`
 	}
-	err := mapURI(&s, map[string][]string{"field": {"6"}})
+	err := mapFormByTag(&s, map[string][]string{"field": {"6"}}, "uri")
 	assert.NoError(t, err)
 	assert.Equal(t, 6, s.F)
 }
