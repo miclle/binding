@@ -67,7 +67,7 @@ var binders = map[string]Binder{
 
 type binder struct{}
 
-func (binder *binder) Bind(req *http.Request, obj any) (err error) {
+func (binder *binder) Bind(req *http.Request, obj any, params ...map[string][]string) (err error) {
 
 	vPtr := reflect.ValueOf(obj)
 
@@ -128,8 +128,8 @@ func (binder *binder) Bind(req *http.Request, obj any) (err error) {
 		}
 	}
 
-	if hasURIField {
-		// TODO(m)
+	if hasURIField && len(params) > 0 {
+		URI.BindURI(params[0], obj)
 	}
 
 	if hasHeaderField {
