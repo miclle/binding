@@ -131,7 +131,10 @@ func (binder *binder) Bind(req *http.Request, obj any, params ...map[string][]st
 	}
 
 	if hasURIField && len(params) > 0 {
-		URI.BindURI(params[0], obj)
+		err = URI.BindURI(params[0], obj)
+		if err != nil {
+			return err
+		}
 	}
 
 	if hasHeaderField {
