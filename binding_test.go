@@ -4,7 +4,7 @@ import (
 	"bytes"
 	stdJson "encoding/json"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -424,13 +424,13 @@ func testProtoBodyBindingFail(t *testing.T, b *binder, name, path, badPath, body
 	obj := protoexample.Test{}
 	req := requestWithBody("POST", path, body)
 
-	req.Body = ioutil.NopCloser(&hook{})
+	req.Body = io.NopCloser(&hook{})
 	req.Header.Add("Content-Type", MIMEPROTOBUF)
 	err := b.Bind(req, &obj)
 	assert.Error(t, err)
 
 	invalidobj := FooStruct{}
-	req.Body = ioutil.NopCloser(strings.NewReader(`{"msg":"hello"}`))
+	req.Body = io.NopCloser(strings.NewReader(`{"msg":"hello"}`))
 	req.Header.Add("Content-Type", MIMEPROTOBUF)
 	err = b.Bind(req, &invalidobj)
 	assert.Error(t, err)
