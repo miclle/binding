@@ -21,10 +21,8 @@ const (
 	MIMEPlain = "text/plain"
 )
 
-var (
-	errCantOnlyBindPointer = errors.New("can only bind pointer")
-	errInvalidRequest      = errors.New("invalid request")
-)
+// ErrBindNonPointerValue is required bind pointer
+var ErrBindNonPointerValue = errors.New("can not bind to non-pointer value")
 
 // Binder describes the interface which needs to be implemented for binding the
 // data present in the request such as JSON request body, query parameters or
@@ -74,7 +72,7 @@ func (binder *binder) Bind(req *http.Request, obj any, params ...map[string][]st
 	vPtr := reflect.ValueOf(obj)
 
 	if vPtr.Kind() != reflect.Ptr {
-		return errCantOnlyBindPointer
+		return ErrBindNonPointerValue
 	}
 
 	// bind request body
