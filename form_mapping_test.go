@@ -161,6 +161,8 @@ func TestMappingTime(t *testing.T) {
 		ZeroValue time.Time
 		CSTTime   time.Time `time_format:"2006-01-02" time_location:"Asia/Shanghai"`
 		UTCTime   time.Time `time_format:"2006-01-02" time_utc:"1"`
+		Unix      time.Time `time_format:"unix"`
+		UnixNano  time.Time `time_format:"unixnano"`
 	}
 
 	var err error
@@ -173,6 +175,8 @@ func TestMappingTime(t *testing.T) {
 		"ZeroValue": {},
 		"CSTTime":   {"2019-01-20"},
 		"UTCTime":   {"2019-01-20"},
+		"Unix":      {"1669732749"},
+		"UnixNano":  {"1669732749000000000"},
 	})
 	assert.NoError(t, err)
 
@@ -183,6 +187,8 @@ func TestMappingTime(t *testing.T) {
 	assert.Equal(t, "2019-01-20 00:00:00 +0800 CST", s.CSTTime.String())
 	assert.Equal(t, "2019-01-19 16:00:00 +0000 UTC", s.CSTTime.UTC().String())
 	assert.Equal(t, "2019-01-20 00:00:00 +0000 UTC", s.UTCTime.String())
+	assert.Equal(t, int64(1669732749), s.Unix.Unix())
+	assert.Equal(t, int64(1669732749000000000), s.Unix.UnixNano())
 
 	// wrong location
 	var wrongLoc struct {
@@ -196,6 +202,13 @@ func TestMappingTime(t *testing.T) {
 		Time time.Time
 	}
 	err = mapForm(&wrongTime, map[string][]string{"Time": {"wrong"}})
+	assert.Error(t, err)
+
+	// wrong unix time value
+	var wrongUnixTime struct {
+		Time time.Time `time_format:"unix"`
+	}
+	err = mapForm(&wrongUnixTime, map[string][]string{"Time": {"wrong"}})
 	assert.Error(t, err)
 }
 
