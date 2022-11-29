@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var testString = "Albert Einstein: Logic will get you from A to B. Imagination will take you everywhere."
@@ -20,6 +22,14 @@ func rawStrToBytes(s string) []byte {
 }
 
 // go test -v
+
+func TestFilterFlags(t *testing.T) {
+	result := filterFlags("text/html ")
+	assert.Equal(t, "text/html", result)
+
+	result = filterFlags("text/html;")
+	assert.Equal(t, "text/html", result)
+}
 
 func TestBytesToString(t *testing.T) {
 	data := make([]byte, 1024)
