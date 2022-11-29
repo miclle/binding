@@ -19,15 +19,6 @@ func (formBinder) Bind(req *http.Request, obj any) error {
 	return mapForm(obj, req.Form)
 }
 
-type formPostBinder struct{}
-
-func (formPostBinder) Bind(req *http.Request, obj any) error {
-	if err := req.ParseForm(); err != nil {
-		return err
-	}
-	return mapForm(obj, req.PostForm)
-}
-
 type formMultipartBinder struct{}
 
 func (formMultipartBinder) Bind(req *http.Request, obj any) error {
