@@ -65,6 +65,12 @@ var binders = map[string]Binder{
 	MIMETOML:              TOML,          // toml
 }
 
+// Bind request arguments
+func Bind(req *http.Request, obj any, params ...map[string][]string) error {
+	var binder = &binder{}
+	return binder.Bind(req, obj, params...)
+}
+
 type binder struct{}
 
 func (binder *binder) Bind(req *http.Request, obj any, params ...map[string][]string) (err error) {
