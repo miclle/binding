@@ -1,9 +1,3 @@
-# binding
-
-Bind request arguments easily in Golang.
-
-## Usage
-```go
 package main
 
 import (
@@ -82,4 +76,3 @@ func main() {
 	//   Content:(*string)(nil)
 	// }
 }
-```
