@@ -2,6 +2,8 @@
 
 Bind request arguments easily in Golang.
 
+[![test status](https://github.com/miclle/binding/workflows/tests/badge.svg?branch=master "test status")](https://github.com/miclle/binding/actions)
+
 ## Usage
 ```go
 package main
