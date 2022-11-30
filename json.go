@@ -23,18 +23,18 @@ var EnableDecoderDisallowUnknownFields = false // TODO(m) migrate to binder glob
 
 type jsonBinder struct{}
 
-func (jsonBinder) Bind(req *http.Request, obj any) error {
+func (jsonBinder) Bind(req *http.Request, obj interface{}) error {
 	if req == nil || req.Body == nil || req.ContentLength == 0 {
 		return nil
 	}
 	return decodeJSON(req.Body, obj)
 }
 
-func (jsonBinder) BindBody(body []byte, obj any) error {
+func (jsonBinder) BindBody(body []byte, obj interface{}) error {
 	return decodeJSON(bytes.NewReader(body), obj)
 }
 
-func decodeJSON(r io.Reader, obj any) error {
+func decodeJSON(r io.Reader, obj interface{}) error {
 	decoder := json.NewDecoder(r)
 	if EnableDecoderUseNumber {
 		decoder.UseNumber()

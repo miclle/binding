@@ -10,7 +10,7 @@ import (
 
 type protobufBinding struct{}
 
-func (b protobufBinding) Bind(req *http.Request, obj any) error {
+func (b protobufBinding) Bind(req *http.Request, obj interface{}) error {
 	buf, err := io.ReadAll(req.Body)
 	if err != nil {
 		return err
@@ -18,7 +18,7 @@ func (b protobufBinding) Bind(req *http.Request, obj any) error {
 	return b.BindBody(buf, obj)
 }
 
-func (protobufBinding) BindBody(body []byte, obj any) error {
+func (protobufBinding) BindBody(body []byte, obj interface{}) error {
 	msg, ok := obj.(proto.Message)
 	if !ok {
 		return errors.New("obj is not ProtoMessage")

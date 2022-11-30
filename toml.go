@@ -10,7 +10,7 @@ import (
 
 type tomlBinding struct{}
 
-func decodeToml(r io.Reader, obj any) error {
+func decodeToml(r io.Reader, obj interface{}) error {
 	decoder := toml.NewDecoder(r)
 	if err := decoder.Decode(obj); err != nil {
 		return err
@@ -18,10 +18,10 @@ func decodeToml(r io.Reader, obj any) error {
 	return decoder.Decode(obj)
 }
 
-func (tomlBinding) Bind(req *http.Request, obj any) error {
+func (tomlBinding) Bind(req *http.Request, obj interface{}) error {
 	return decodeToml(req.Body, obj)
 }
 
-func (tomlBinding) BindBody(body []byte, obj any) error {
+func (tomlBinding) BindBody(body []byte, obj interface{}) error {
 	return decodeToml(bytes.NewReader(body), obj)
 }

@@ -23,20 +23,20 @@ var (
 	ErrConvertToMapString = errors.New("can not convert to map of strings")
 )
 
-func mapForm(ptr any, form map[string][]string) error {
+func mapForm(ptr interface{}, form map[string][]string) error {
 	return mapFormByTag(ptr, form, "form")
 }
 
-func mapFormWithTag(ptr any, form map[string][]string, tag string) error {
+func mapFormWithTag(ptr interface{}, form map[string][]string, tag string) error {
 	return mapFormByTag(ptr, form, tag)
 }
 
 var emptyField = reflect.StructField{}
 
-func mapFormByTag(ptr any, form map[string][]string, tag string) error {
+func mapFormByTag(ptr interface{}, form map[string][]string, tag string) error {
 	// Check if ptr is a map
 	ptrVal := reflect.ValueOf(ptr)
-	var pointed any
+	var pointed interface{}
 	if ptrVal.Kind() == reflect.Ptr {
 		ptrVal = ptrVal.Elem()
 		pointed = ptrVal.Interface()
@@ -66,7 +66,7 @@ func (form formSource) TrySet(value reflect.Value, field reflect.StructField, ta
 	return setByForm(value, field, form, tagValue, opt)
 }
 
-func mappingByPtr(ptr any, setter setter, tag string) error {
+func mappingByPtr(ptr interface{}, setter setter, tag string) error {
 	_, err := mapping(reflect.ValueOf(ptr), emptyField, setter, tag)
 	return err
 }
@@ -369,7 +369,7 @@ func head(str, sep string) (head string, tail string) {
 	return str[:idx], str[idx+len(sep):]
 }
 
-func setFormMap(ptr any, form map[string][]string) error {
+func setFormMap(ptr interface{}, form map[string][]string) error {
 	el := reflect.TypeOf(ptr).Elem()
 
 	if el.Kind() == reflect.Slice {

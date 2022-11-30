@@ -28,13 +28,13 @@ var ErrBindNonPointerValue = errors.New("can not bind to non-pointer value")
 // data present in the request such as JSON request body, query parameters or
 // the form POST.
 type Binder interface {
-	Bind(*http.Request, any) error
+	Bind(*http.Request, interface{}) error
 }
 
 // URIBinder adds BindURI method to Binding. BindUri is similar with Bind,
 // but it reads the Params.
 type URIBinder interface {
-	BindURI(map[string][]string, any) error
+	BindURI(map[string][]string, interface{}) error
 }
 
 // These implement the Binding interface and can be used to bind the data
@@ -66,14 +66,14 @@ var binders = map[string]Binder{
 }
 
 // Bind request arguments
-func Bind(req *http.Request, obj any, params ...map[string][]string) error {
+func Bind(req *http.Request, obj interface{}, params ...map[string][]string) error {
 	var binder = &binder{}
 	return binder.Bind(req, obj, params...)
 }
 
 type binder struct{}
 
-func (binder *binder) Bind(req *http.Request, obj any, params ...map[string][]string) (err error) {
+func (binder *binder) Bind(req *http.Request, obj interface{}, params ...map[string][]string) (err error) {
 
 	vPtr := reflect.ValueOf(obj)
 

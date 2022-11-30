@@ -76,7 +76,7 @@ func TestFormMultipartBindingBindError(t *testing.T) {
 
 	for _, tt := range []struct {
 		name string
-		s    any
+		s    interface{}
 	}{
 		{"wrong type", &struct {
 			Files int `form:"file"`

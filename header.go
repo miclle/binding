@@ -8,11 +8,11 @@ import (
 
 type headerBinding struct{}
 
-func (headerBinding) Bind(req *http.Request, obj any) error {
+func (headerBinding) Bind(req *http.Request, obj interface{}) error {
 	return mapHeader(obj, req.Header)
 }
 
-func mapHeader(ptr any, h map[string][]string) error {
+func mapHeader(ptr interface{}, h map[string][]string) error {
 	return mappingByPtr(ptr, headerSource(h), "header")
 }
 

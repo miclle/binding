@@ -9,14 +9,14 @@ import (
 
 type xmlBinding struct{}
 
-func (xmlBinding) Bind(req *http.Request, obj any) error {
+func (xmlBinding) Bind(req *http.Request, obj interface{}) error {
 	return decodeXML(req.Body, obj)
 }
 
-func (xmlBinding) BindBody(body []byte, obj any) error {
+func (xmlBinding) BindBody(body []byte, obj interface{}) error {
 	return decodeXML(bytes.NewReader(body), obj)
 }
-func decodeXML(r io.Reader, obj any) error {
+func decodeXML(r io.Reader, obj interface{}) error {
 	decoder := xml.NewDecoder(r)
 	return decoder.Decode(obj)
 }

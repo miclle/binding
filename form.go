@@ -9,7 +9,7 @@ const defaultMemory = 32 << 20
 
 type formBinder struct{}
 
-func (formBinder) Bind(req *http.Request, obj any) error {
+func (formBinder) Bind(req *http.Request, obj interface{}) error {
 	if err := req.ParseForm(); err != nil {
 		return err
 	}
@@ -21,7 +21,7 @@ func (formBinder) Bind(req *http.Request, obj any) error {
 
 type formMultipartBinder struct{}
 
-func (formMultipartBinder) Bind(req *http.Request, obj any) error {
+func (formMultipartBinder) Bind(req *http.Request, obj interface{}) error {
 	if err := req.ParseMultipartForm(defaultMemory); err != nil {
 		return err
 	}

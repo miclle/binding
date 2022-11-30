@@ -28,7 +28,7 @@ type FooBarStruct struct {
 }
 
 type FooStructForMapType struct {
-	MapFoo map[string]any `form:"map_foo" query:"map_foo"`
+	MapFoo map[string]interface{} `form:"map_foo" query:"map_foo"`
 }
 
 type FooStructForBoolType struct {
@@ -50,7 +50,7 @@ func TestBindingJSON(t *testing.T) {
 
 func TestBindingJSONUseNumber(t *testing.T) {
 	type FooStructUseNumber struct {
-		Foo any `json:"foo"`
+		Foo interface{} `json:"foo"`
 	}
 
 	obj := FooStructUseNumber{}
@@ -89,7 +89,7 @@ func TestBindingJSONStringMap(t *testing.T) {
 
 func TestBindingJSONDisallowUnknownFields(t *testing.T) {
 	type FooStructDisallowUnknownFields struct {
-		Foo any `json:"foo"`
+		Foo interface{} `json:"foo"`
 	}
 
 	EnableDecoderDisallowUnknownFields = true
@@ -256,7 +256,7 @@ func TestHeaderBinding(t *testing.T) {
 	req.Header.Add("fail", `{fail:fail}`)
 
 	type failStruct struct {
-		Fail map[string]any `header:"fail"`
+		Fail map[string]interface{} `header:"fail"`
 	}
 
 	err := b.Bind(req, &failStruct{})
@@ -275,11 +275,11 @@ func TestURIBinding(t *testing.T) {
 	assert.Equal(t, "thinkerou", tag.Name)
 
 	type NotSupportStruct struct {
-		Name map[string]any `uri:"name"`
+		Name map[string]interface{} `uri:"name"`
 	}
 	var not NotSupportStruct
 	assert.Error(t, URI.BindURI(m, &not))
-	assert.Equal(t, map[string]any{}, not.Name)
+	assert.Equal(t, map[string]interface{}{}, not.Name)
 }
 
 func TestURIInnerBinding(t *testing.T) {
