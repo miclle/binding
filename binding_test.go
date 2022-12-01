@@ -269,16 +269,23 @@ func TestURIBinding(t *testing.T) {
 		Name string `uri:"name"`
 	}
 	var tag Tag
+
 	m := make(map[string][]string)
 	m["name"] = []string{"thinkerou"}
-	assert.NoError(t, URI.BindURI(m, &tag))
+
+	req := requestWithBody("GET", "/", "")
+
+	assert.NoError(t, b.Bind(req, &tag, m))
 	assert.Equal(t, "thinkerou", tag.Name)
 
 	type NotSupportStruct struct {
 		Name map[string]interface{} `uri:"name"`
 	}
 	var not NotSupportStruct
-	assert.Error(t, URI.BindURI(m, &not))
+
+	req = requestWithBody("GET", "/", "")
+
+	assert.Error(t, b.Bind(req, &not, m))
 	assert.Equal(t, map[string]interface{}{}, not.Name)
 }
 

@@ -119,7 +119,7 @@ func (binder *binder) Bind(req *http.Request, obj interface{}, params ...map[str
 		if tag := field.Tag.Get("query"); tag != "" && tag != "-" {
 			hasQueryField = true
 		}
-		if tag := field.Tag.Get("url"); tag != "" && tag != "-" {
+		if tag := field.Tag.Get("uri"); tag != "" && tag != "-" {
 			hasURIField = true
 		}
 		if tag := field.Tag.Get("header"); tag != "" && tag != "-" {
