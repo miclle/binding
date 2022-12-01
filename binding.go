@@ -52,7 +52,7 @@ var (
 	URI           URIBinder = uriBinding{}
 )
 
-var defaultBinder Binder
+var defaultBinder Binder = JSON
 
 var binders = map[string]Binder{
 	MIMEJSON:              JSON,          // json
@@ -88,7 +88,9 @@ func (binder *binder) Bind(req *http.Request, obj interface{}, params ...map[str
 	if binder, exists := binders[contentType]; exists {
 		err = binder.Bind(req, obj)
 	} else {
-		if defaultBinder != nil {
+		if req.Method == http.MethodGet {
+			err = Form.Bind(req, obj)
+		} else if defaultBinder != nil {
 			err = defaultBinder.Bind(req, obj)
 		}
 	}
